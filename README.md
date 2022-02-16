@@ -1,3 +1,5 @@
+# interview-bergermarcin
+
 # Recruitment assignment
 ----
 
@@ -6,7 +8,7 @@ The task is to develop a simple game utilizing API http://roll.diceapi.com/ or h
 ## Game rules:
 
 - Player has one dice/card at a time
-- There are two buttons that the player uses to decide whether the next card/dice number will be higher or lower 
+- There are two buttons that the player uses to decide whether the next card/dice number will be higher or lower
 - Once the player chooses one of the options, he/she gets 0.1 point for the correct answer and a new dice/card is shown
 - There should be 30 rounds of the game
 
@@ -22,4 +24,29 @@ The task is to develop a simple game utilizing API http://roll.diceapi.com/ or h
 - The project does not have time limitation, however it should not take more than a few hours
 - Any tools, frameworks, librialiers or packages can be used to complete the task
 - Submit the project the way you do when working with a team
-- This repository is created exclusively for your recruitment process and you can interact with it the way you like 
+- This repository is created exclusively for your recruitment process and you can interact with it the way you like
+
+<hr/>
+
+## Project setup
+```
+yarn install
+```
+
+### Compiles and hot-reloads for development
+```
+yarn serve
+```
+
+### Compiles and minifies for production
+```
+yarn build
+```
+
+### Lints and fixes files
+```
+yarn lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
