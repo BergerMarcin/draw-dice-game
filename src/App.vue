@@ -11,12 +11,12 @@
       <h3>Draw</h3>
       <h4>Remaining rounds: {{ remainingRoundNumber }}</h4>
       <h4>
-        Previous draw: {{ areResultsValid ? currentRoundResults.previousDraw : "Start currentGameResults first!" }}
+        Previous draw: {{ areResultsValid ? currentRoundResult.previousDraw : "Start currentGameResults first!" }}
       </h4>
-      <button @click="setChoiceAndStartNewRoundOrNewGame(choiceType.HIGHER)" :disabled="!areResultsValid">
+      <button @click="finalizeRoundAndStartNewRoundOrNewGame(choiceType.HIGHER)" :disabled="!areResultsValid">
         ↑ HIGHER next draw ↑
       </button>
-      <button @click="setChoiceAndStartNewRoundOrNewGame(choiceType.LOWER)" :disabled="!areResultsValid">
+      <button @click="finalizeRoundAndStartNewRoundOrNewGame(choiceType.LOWER)" :disabled="!areResultsValid">
         ↓ LOWER next draw ↓
       </button>
     </section>
@@ -50,14 +50,8 @@
 
 <script>
 import AppHeader from "./components/AppHeader.vue";
-import {
-  STORAGE_KEY,
-  CHOICE,
-  CHOICE_POINTS,
-  SCORE_FRACTION_DIGITS,
-  MAX_ROUNDS,
-  CONSOLE_TYPE,
-} from "./helpers/constants";
+import { CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "./helpers/constants";
+import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
   name: "App",
@@ -67,124 +61,84 @@ export default {
   },
 
   data: () => ({
-    results: [],
     choiceType: CHOICE,
-    debugMode: true,
   }),
 
-  mounted() {
-    this.results = this.loadResults();
-    // TODO: move below code to the component to choose if new game or continue and display results underneath; use modal
-    if (!this.areResultsValid || this.currentRoundNumber >= MAX_ROUNDS) this.startNewGame();
-    else if (confirm("Would you like to continue saved game?")) this.startNewRound();
-    else this.startNewGame();
+  computed: {
+    ...mapState(["results"]),
+    ...mapGetters([
+      "areResultsValid",
+      "currentGameResults",
+      "currentRoundNumber",
+      "remainingRoundNumber",
+      "currentGameScore",
+      "currentRoundResult",
+    ]),
   },
 
-  computed: {
-    areResultsValid() {
-      return this.results?.length && this.results[this.results.length - 1].length;
-    },
-    currentGameResults() {
-      if (!this.areResultsValid) return [];
-      return this.results[this.results.length - 1];
-    },
-    currentRoundNumber() {
-      return this.currentGameResults.length;
-    },
-    remainingRoundNumber() {
-      return MAX_ROUNDS - this.currentRoundNumber + 1;
-    },
-    currentGameScore() {
-      if (!this.areResultsValid) return 0;
-      return this.currentGameResults.reduce((sum, res) => res.points + sum, 0).toFixed(SCORE_FRACTION_DIGITS);
-    },
-    currentRoundResults() {
-      return this.areResultsValid ? this.currentGameResults[this.currentGameResults.length - 1] : null;
-    },
+  async created() {
+    this.loadResults();
+    // TODO: move below code to the component to choose if new game or continue and display results underneath; use modal
+    if (
+      !this.areResultsValid ||
+      (this.currentRoundNumber >= MAX_ROUNDS && this.currentRoundResult.draw !== null) ||
+      !confirm("Would you like to continue saved game?")
+    ) {
+      if (!this.areResultsValid) await this.resetResults();
+      await this.startNewGame();
+    }
   },
 
   methods: {
-    loadResults() {
-      const resStr = localStorage.getItem(STORAGE_KEY);
-      const res = resStr ? JSON.parse(resStr) : [];
-      this.debugMsg(CONSOLE_TYPE.LOG, "Read saved results: ", res);
-      return res;
+    ...mapActions(["loadResults", "resetResults", "setNewGame", "setNewRound", "updateCurrentRound"]),
+
+    async startNewGame() {
+      const newGame = [{ previousDraw: this.drawDice(0), choice: null, draw: null, points: null }];
+      await this.setNewGame({ newGame: newGame });
     },
 
-    saveResults(res) {
-      if (!res) {
-        this.debugMsg(CONSOLE_TYPE.WARN, "Results not saved. Results are empty");
-        return;
+    async startNewRound() {
+      const newRound = { previousDraw: this.currentRoundResult.draw, choice: null, draw: null, points: null };
+      await this.setNewRound({ newRound: newRound });
+    },
+
+    async finalizeRoundAndStartNewRoundOrNewGame(choice) {
+      const draw = this.drawDice(this.currentRoundResult.previousDraw);
+      const points = this.calcPointsOfRound(choice, draw);
+      const round = { ...this.currentRoundResult, draw, choice, points };
+      await this.updateCurrentRound({ round });
+
+      // TODO: showRoundSummary
+      // alert(`Your points: ${points}`);
+
+      if (this.currentRoundNumber < MAX_ROUNDS) {
+        await this.startNewRound();
+      } else {
+        // TODO: showModalNewGame (as below alert is blocking Vuex and no update of state, so on screen no points last round)
+        alert("Let's Start New Game!");
+        await this.startNewGame();
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(res));
-      this.debugMsg(CONSOLE_TYPE.LOG, "Saved results: ", res);
-      return res;
     },
 
-    startNewGame() {
-      const newGame = [{ previousDraw: this.drawDick(0), choice: null, draw: null, points: null }];
-      // TODO: change below to reactive-way
-      this.results.push(newGame);
-    },
-
-    startNewRound() {
-      if (!this.currentRoundResults) {
-        this.debugMsg(CONSOLE_TYPE.ERROR, "Error. No previous round result to start new round");
-        return;
-      }
-      const newRound = { previousDraw: this.currentRoundResults.draw, choice: null, draw: null, points: null };
-      // TODO: change below to reactive-way
-      this.results[this.results.length - 1].push(newRound);
-    },
-
-    setChoiceAndStartNewRoundOrNewGame(choice) {
-      if (!Object.values(CHOICE).includes(choice)) {
-        this.debugMsg(CONSOLE_TYPE.ERROR, "Wrong choice type. Passed choice: ", choice);
-        return;
-      }
-      const newDraw = this.drawDick(this.currentRoundResults.previousDraw);
+    calcPointsOfRound(choice, draw) {
       let points = CHOICE_POINTS.WRONG;
       switch (choice) {
         case CHOICE.HIGHER:
-          if (newDraw > this.currentRoundResults.previousDraw) points = CHOICE_POINTS.CORRECT;
+          if (draw > this.currentRoundResult.previousDraw) points = CHOICE_POINTS.CORRECT;
           break;
         case CHOICE.LOWER:
-          if (newDraw < this.currentRoundResults.previousDraw) points = CHOICE_POINTS.CORRECT;
+          if (draw < this.currentRoundResult.previousDraw) points = CHOICE_POINTS.CORRECT;
           break;
       }
-      // TODO: change below to reactive-way
-      const gameIndex = this.results.length - 1;
-      const roundIndex = this.results[gameIndex].length - 1;
-      this.results[gameIndex][roundIndex].draw = newDraw;
-      this.results[gameIndex][roundIndex].choice = choice;
-      this.results[gameIndex][roundIndex].points = points;
-      this.saveResults(this.results);
-
-      // TODO: if (points === CHOICE_POINTS.CORRECT) showModalCongratulation
-
-      if (this.currentRoundNumber < MAX_ROUNDS) {
-        this.startNewRound();
-      } else {
-        // TODO: showModalNewRoundHasStarted
-        alert("Let's Start New Game!");
-        this.startNewGame();
-      }
+      return points;
     },
 
-    drawDick(prevDraw) {
+    drawDice(prevDraw) {
       let newDraw = prevDraw;
       while (newDraw === prevDraw) {
         newDraw = Math.floor(Math.random() * 6) + 1;
       }
-      this.debugMsg(CONSOLE_TYPE.LOG, `New draw: ${newDraw} (previous draw: ${prevDraw})`);
       return newDraw;
-    },
-
-    debugMsg(msgType = CONSOLE_TYPE.LOG, ...msg) {
-      if (!this.debugMode) return;
-      if (!Object.values(CONSOLE_TYPE).includes(msgType))
-        console.error(`!!! Wrong message type (${msgType}) for message content: `, ...msg);
-      console[msgType](...msg);
     },
   },
 };
