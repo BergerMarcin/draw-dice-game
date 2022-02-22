@@ -1,0 +1,9 @@
+$breakpoint-values: (
+  "sm": 576,
+) !default;
+
+@each $name, $value in $breakpoint-values {
+  :export {
+    #{$name}: $value;
+  }
+}

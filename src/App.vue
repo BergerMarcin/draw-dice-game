@@ -45,27 +45,28 @@
       </table>
       <h4 v-else>Start New Game first!</h4>
     </section>
+
+    <Modal v-if="modalText" />
   </div>
 </template>
 
 <script>
-import AppHeader from "./components/AppHeader.vue";
-import { CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "./helpers/constants";
+import AppHeader from "@/components/AppHeader.vue";
+import Modal from "@/components/Modal.vue";
+import { CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
 import { mapState, mapActions, mapGetters } from "vuex";
 
 export default {
   name: "App",
 
-  components: {
-    AppHeader,
-  },
+  components: { AppHeader, Modal },
 
   data: () => ({
     choiceType: CHOICE,
   }),
 
   computed: {
-    ...mapState(["results"]),
+    ...mapState(["results", "modalText"]),
     ...mapGetters([
       "areResultsValid",
       "currentGameResults",
@@ -90,7 +91,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(["loadResults", "resetResults", "setNewGame", "setNewRound", "updateCurrentRound"]),
+    ...mapActions(["loadResults", "resetResults", "setNewGame", "setNewRound", "updateCurrentRound", "setModalText"]),
 
     async startNewGame() {
       const newGame = [{ previousDraw: this.drawDice(0), choice: null, draw: null, points: null }];
@@ -110,6 +111,7 @@ export default {
 
       // TODO: showRoundSummary
       // alert(`Your points: ${points}`);
+      this.setModalText({ modalText: `Your points: ${points}` });
 
       if (this.currentRoundNumber < MAX_ROUNDS) {
         await this.startNewRound();
@@ -144,13 +146,15 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: $text-color;
+  background: $app-background;
   overflow-y: auto;
 }
 
@@ -164,8 +168,9 @@ h4 {
 }
 
 button {
+  @include app-button;
   margin: 5px 20px;
-  height: 2rem;
+  display: inline;
 }
 
 .results {

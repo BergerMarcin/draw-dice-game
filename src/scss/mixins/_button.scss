@@ -1,0 +1,36 @@
+@import "../abstract/index";
+
+@mixin app-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 3rem;
+  width: 100px;
+  background-color: $btn-color;
+  font-size: rem(14px);
+  font-weight: 600;
+  line-height: rem(18px);
+  border-radius: 0;
+  border: 2px solid transparent;
+  box-shadow: 0 10px 14px $shadow;
+  transition: filter 0.3s ease;
+
+  &:disabled {
+    background: $gray-300;
+  }
+
+  @include has-min-width("sm") {
+    font-size: rem(16px);
+    margin-bottom: 0;
+    width: 250px;
+  }
+
+  @include can-hover() {
+    &:not(:disabled) {
+      &:hover {
+        filter: brightness(0.8);
+        box-shadow: 0 10px 10px $shadow;
+      }
+    }
+  }
+}

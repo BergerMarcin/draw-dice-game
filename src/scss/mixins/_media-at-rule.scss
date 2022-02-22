@@ -1,0 +1,24 @@
+@import "../abstract/breakpoint.module";
+
+/// Responsive min width media query manager
+/// @access public
+/// @param {String} $breakpoint-name - Breakpoint
+/// @requires $breakpoint-values
+@mixin has-min-width($breakpoint-name) {
+  $raw-value: map-get($breakpoint-values, $breakpoint-name);
+
+  @if $raw-value {
+    @media screen and (min-width: #{$raw-value}px) {
+      @content;
+    }
+  } @else {
+    @error "No value found for `#{$breakpoint-name}`. "
+         + "Please make sure it is defined in `$breakpoint-values` map.";
+  }
+}
+
+@mixin can-hover() {
+  @media (hover), (-ms-high-contrast: active), (-ms-high-contrast: none) {
+    @content;
+  }
+}

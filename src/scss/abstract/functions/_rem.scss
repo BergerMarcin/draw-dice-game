@@ -1,0 +1,23 @@
+@use "sass:math";
+
+@function strip-units($number) {
+  @return math.div($number, ($number * 0 + 1));
+}
+
+@function rem($x, $fallback: false) {
+  @if type-of($x) != "number" or $x == 0 {
+    @return $x;
+  } @else {
+    $base: 16;
+    $value: strip-units($x);
+    $unit: unit($x);
+
+    @if $unit == "rem" or $unit == "" {
+      @return if($fallback, $base * $value * 1px, $value * 1rem);
+    } @else if unit($x) == "px" {
+      @return if($fallback, $value * 1px, math.div($value, $base) * 1rem);
+    } @else {
+      @return $x;
+    }
+  }
+}
