@@ -1,10 +1,10 @@
 import axios from "../plugins/axios-api";
 import { API_ERROR } from "@/helpers/constants";
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex";
 
 export const diceApiMixin = {
   computed: {
-    ...mapGetters(["isDev"])
+    ...mapGetters(["isDev"]),
   },
 
   methods: {
