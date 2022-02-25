@@ -83,14 +83,8 @@ export default new Vuex.Store({
     currentRoundResult(state, getters) {
       return getters.areResultsValid ? getters.currentGameResults[getters.currentGameResults.length - 1] : null;
     },
-    env() {
-      return process.env;
-    },
-    apiPath() {
-      return process.env.API_PATH || "";
-    },
     isDev() {
-      return process.env.DEV_MODE || false;
+      return process.env.VUE_APP_DEV_MODE === "true" || false;
     },
   },
 });

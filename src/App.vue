@@ -1,9 +1,8 @@
 <template>
   <div id="app">
-    <AppHeader msg="Predict Your Draw!" />
+    <AppHeader msg="Guess Your Draw!" />
 
     <section>
-      <h3>Start New Game!</h3>
       <button @click="startNewGame">Start New Game</button>
     </section>
 
@@ -51,15 +50,19 @@
 </template>
 
 <script>
+import { diceApiMixin } from "@/mixins/diceApiMixin";
 import AppHeader from "@/components/AppHeader.vue";
 import Modal from "@/components/Modal.vue";
-import { CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
+import Swal from "sweetalert2";
 import { mapState, mapActions, mapGetters } from "vuex";
+import { API_ERROR, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
 
 export default {
   name: "App",
 
   components: { AppHeader, Modal },
+
+  mixins: [diceApiMixin],
 
   data: () => ({
     choiceType: CHOICE,
@@ -94,7 +97,8 @@ export default {
     ...mapActions(["loadResults", "resetResults", "setNewGame", "setNewRound", "updateCurrentRound", "setModalText"]),
 
     async startNewGame() {
-      const newGame = [{ previousDraw: this.drawDice(0), choice: null, draw: null, points: null }];
+      const draw = await this.drawDice(0);
+      const newGame = [{ previousDraw: draw, choice: null, draw: null, points: null }];
       await this.setNewGame({ newGame: newGame });
     },
 
@@ -104,7 +108,7 @@ export default {
     },
 
     async finalizeRoundAndStartNewRoundOrNewGame(choice) {
-      const draw = this.drawDice(this.currentRoundResult.previousDraw);
+      const draw = await this.drawDice(this.currentRoundResult.previousDraw);
       const points = this.calcPointsOfRound(choice, draw);
       const round = { ...this.currentRoundResult, draw, choice, points };
       await this.updateCurrentRound({ round });
@@ -135,19 +139,34 @@ export default {
       return points;
     },
 
-    drawDice(prevDraw) {
+    async drawDice(prevDraw) {
       let newDraw = prevDraw;
       while (newDraw === prevDraw) {
-        newDraw = Math.floor(Math.random() * 6) + 1;
+        newDraw = await this.getDiceValue(["json", "d6"]).catch(
+          async (error) => {
+            await this.showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG)
+            return prevDraw;
+          }
+        );
       }
       return newDraw;
+    },
+
+    async showError(msg) {
+      return Swal.fire({
+        title: "Error Message",
+        text: msg,
+        icon: "error",
+        showCancelButton: false,
+        confirmButtonColor: "#3085d6",
+        confirmButtonText: "OK",
+      });
     },
   },
 };
 </script>
 
 <style lang="scss">
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

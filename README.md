@@ -37,6 +37,7 @@ yarn install
 ```
 yarn serve
 ```
+> > Please start CORS plugin in the browser or run browser with disabled protections
 
 ### Compiles and minifies for production
 ```
