@@ -6,44 +6,9 @@
       <button @click="startNewGame">Start New Game</button>
     </section>
 
-    <section>
-      <h3>Draw</h3>
-      <h4>Remaining rounds: {{ remainingRoundNumber }}</h4>
-      <h4>
-        Previous draw: {{ areResultsValid ? currentRoundResult.previousDraw : "Start currentGameResults first!" }}
-      </h4>
-      <button @click="finalizeRoundAndStartNewRoundOrNewGame(choiceType.HIGHER)" :disabled="!areResultsValid">
-        ↑ HIGHER next draw ↑
-      </button>
-      <button @click="finalizeRoundAndStartNewRoundOrNewGame(choiceType.LOWER)" :disabled="!areResultsValid">
-        ↓ LOWER next draw ↓
-      </button>
-    </section>
+    <Round @nextDrawHigher="finalizeRound(choiceType.HIGHER)" @nextDrawLower="finalizeRound(choiceType.LOWER)" />
 
-    <section class="results">
-      <h3>Round Results</h3>
-      <table v-if="areResultsValid" border="1">
-        <tr>
-          <th scope="col">Round</th>
-          <th scope="col">Previous Draw</th>
-          <th scope="col">Choice</th>
-          <th scope="col">Dice Draw</th>
-          <th scope="col">Points</th>
-        </tr>
-        <tr v-for="(result, index) in currentGameResults" :key="`currentGameResults-result-${index + 1}`">
-          <td>{{ index + 1 }}</td>
-          <td>{{ result.previousDraw }}</td>
-          <td>{{ result.choice !== null ? result.choice : "..." }}</td>
-          <td>{{ result.draw !== null ? result.draw : "..." }}</td>
-          <td>{{ result.points !== null ? result.points : "..." }}</td>
-        </tr>
-        <tr>
-          <td colspan="4">Game Score:</td>
-          <td>{{ currentGameScore }}</td>
-        </tr>
-      </table>
-      <h4 v-else>Start New Game first!</h4>
-    </section>
+    <Results />
 
     <Modal v-if="modalText" />
   </div>
@@ -52,6 +17,8 @@
 <script>
 import { diceApiMixin } from "@/mixins/diceApiMixin";
 import AppHeader from "@/components/AppHeader.vue";
+import Round from "@/components/Round";
+import Results from "@/components/Results";
 import Modal from "@/components/Modal.vue";
 import Swal from "sweetalert2";
 import { mapState, mapActions, mapGetters } from "vuex";
@@ -60,7 +27,7 @@ import { API_ERROR, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constant
 export default {
   name: "App",
 
-  components: { AppHeader, Modal },
+  components: { AppHeader, Round, Results, Modal },
 
   mixins: [diceApiMixin],
 
@@ -70,14 +37,7 @@ export default {
 
   computed: {
     ...mapState(["results", "modalText"]),
-    ...mapGetters([
-      "areResultsValid",
-      "currentGameResults",
-      "currentRoundNumber",
-      "remainingRoundNumber",
-      "currentGameScore",
-      "currentRoundResult",
-    ]),
+    ...mapGetters(["areResultsValid", "currentRoundNumber", "currentRoundResult"]),
   },
 
   async created() {
@@ -107,7 +67,8 @@ export default {
       await this.setNewRound({ newRound: newRound });
     },
 
-    async finalizeRoundAndStartNewRoundOrNewGame(choice) {
+    // finalize round & then start new round || start new game
+    async finalizeRound(choice) {
       const draw = await this.drawDice(this.currentRoundResult.previousDraw);
       const points = this.calcPointsOfRound(choice, draw);
       const round = { ...this.currentRoundResult, draw, choice, points };
@@ -142,12 +103,10 @@ export default {
     async drawDice(prevDraw) {
       let newDraw = prevDraw;
       while (newDraw === prevDraw) {
-        newDraw = await this.getDiceValue(["json", "d6"]).catch(
-          async (error) => {
-            await this.showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG)
-            return prevDraw;
-          }
-        );
+        newDraw = await this.getDiceValue(["json", "d6"]).catch(async (error) => {
+          await this.showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG);
+          return prevDraw;
+        });
       }
       return newDraw;
     },
@@ -167,13 +126,19 @@ export default {
 </script>
 
 <style lang="scss">
+body {
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  background: $app-background;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: $text-color;
-  background: $app-background;
   overflow-y: auto;
 }
 
@@ -190,11 +155,5 @@ button {
   @include app-button;
   margin: 5px 20px;
   display: inline;
-}
-
-.results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 </style>
