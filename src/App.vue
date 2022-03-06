@@ -126,6 +126,8 @@ export default {
 </script>
 
 <style lang="scss">
+@import "scss/base/reset";
+
 body {
   min-height: 100vh;
   padding: 0;

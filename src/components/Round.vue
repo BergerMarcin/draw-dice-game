@@ -1,7 +1,7 @@
 <template>
   <section class="round">
-    <h3>Draw</h3>
-    <h4>Remaining rounds: {{ remainingRoundNumber }}</h4>
+    <h4>Draw</h4>
+    <h3>Remaining rounds: {{ remainingRoundNumber }}</h3>
     <h4>Previous draw: {{ areResultsValid ? currentRoundResult.previousDraw : "Start currentGameResults first!" }}</h4>
     <button @click="$emit('nextDrawHigher')" :disabled="!areResultsValid">↑ HIGHER next draw ↑</button>
     <button @click="$emit('nextDrawLower')" :disabled="!areResultsValid">↓ LOWER next draw ↓</button>
@@ -25,8 +25,11 @@ export default {
   width: 80%;
   margin-left: auto;
   margin-right: auto;
-  padding: 30px;
-  border: 1px solid grey;
+  padding: 30px 10px;
+  border: 1px solid $gray;
   box-shadow: 0 10px 10px $shadow;
+  @include has-min-width("xs") {
+    padding: 30px;
+  }
 }
 </style>
