@@ -2,7 +2,7 @@
   .fade-enter-active, .fade-leave-active {
     transition: opacity $time;
   }
-  .fade-enter, .fade-leave-to {
+  .fade-enter, .fade-leave {
     @content
   }
 }
