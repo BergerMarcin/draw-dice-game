@@ -1,5 +1,7 @@
 export const STORAGE_KEY = "draw_dice_results";
 
+/* ---------------- GAME ----------------- */
+
 export const MAX_ROUNDS = 30;
 
 export const CHOICE = {
@@ -13,6 +15,12 @@ export const CHOICE_POINTS = {
 };
 
 export const SCORE_FRACTION_DIGITS = 1;
+
+/* ---------------- API ----------------- */
+
+export const API_HOST_DRAW_SUFFIX_URIS = ["json", "d6"];
+
+export const API_HOST_IMG_SUFFIX_URIS = ["images", "poorly-drawn", "d6"];
 
 export const API_ERROR = {
   UNKNOWN: {

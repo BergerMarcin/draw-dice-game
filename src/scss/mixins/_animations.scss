@@ -1,0 +1,8 @@
+@mixin animation-fade($time) {
+  .fade-enter-active, .fade-leave-active {
+    transition: opacity $time;
+  }
+  .fade-enter, .fade-leave-to {
+    @content
+  }
+}

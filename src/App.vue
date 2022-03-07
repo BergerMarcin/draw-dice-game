@@ -10,7 +10,7 @@
 
     <Results />
 
-    <Modal v-if="modalText" />
+    <Modal />
   </div>
 </template>
 
@@ -22,7 +22,7 @@ import Results from "@/components/Results";
 import Modal from "@/components/Modal.vue";
 import Swal from "sweetalert2";
 import { mapState, mapActions, mapGetters } from "vuex";
-import { API_ERROR, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
+import {API_ERROR, API_HOST_DRAW_SUFFIX_URIS, CHOICE, CHOICE_POINTS, MAX_ROUNDS} from "@/helpers/constants";
 
 export default {
   name: "App",
@@ -36,7 +36,7 @@ export default {
   }),
 
   computed: {
-    ...mapState(["results", "modalText"]),
+    ...mapState(["results"]),
     ...mapGetters(["areResultsValid", "currentRoundNumber", "currentRoundResult"]),
   },
 
@@ -76,7 +76,7 @@ export default {
 
       // TODO: showRoundSummary
       // alert(`Your points: ${points}`);
-      this.setModalText({ modalText: `Your points: ${points}` });
+      this.setModalText({ modalText: `Your draw: ${draw}</br></br>Your points: ${points}` });
 
       if (this.currentRoundNumber < MAX_ROUNDS) {
         await this.startNewRound();
@@ -103,7 +103,7 @@ export default {
     async drawDice(prevDraw) {
       let newDraw = prevDraw;
       while (newDraw === prevDraw) {
-        newDraw = await this.getDiceValue(["json", "d6"]).catch(async (error) => {
+        newDraw = await this.getDiceValue(API_HOST_DRAW_SUFFIX_URIS).catch(async (error) => {
           await this.showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG);
           return prevDraw;
         });

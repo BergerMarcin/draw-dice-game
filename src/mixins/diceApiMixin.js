@@ -8,7 +8,7 @@ export const diceApiMixin = {
   },
 
   methods: {
-    getDiceValue(params = []) {
+    constructUrl(apiSuffixUris = []) {
       if (!process.env.VUE_APP_API_HOST) {
         if (this.isDev) console.error(API_ERROR.NO_URL_HOST.DEV_MSG);
         throw new Error(API_ERROR.NO_URL_HOST.USER_MSG);
@@ -17,10 +17,21 @@ export const diceApiMixin = {
       let urlWithPathname;
       try {
         urlWithPathname = new URL(process.env.VUE_APP_API_HOST);
-        urlWithPathname.pathname = params.join("/");
+        urlWithPathname.pathname = apiSuffixUris.join("/");
       } catch (e) {
         if (this.isDev) console.error(API_ERROR.WRONG_URL.DEV_MSG);
         throw new Error(API_ERROR.WRONG_URL.USER_MSG);
+      }
+
+      return urlWithPathname;
+    },
+
+    getDiceValue(apiSuffixUris = []) {
+      let urlWithPathname;
+      try {
+        urlWithPathname = this.constructUrl(apiSuffixUris);
+      } catch (error) {
+        throw new Error(error);
       }
 
       return axios
@@ -39,5 +50,15 @@ export const diceApiMixin = {
           throw new Error(API_ERROR.GENERAL_RESPONSE_ERROR.USER_MSG);
         });
     },
+
+    getDiceImgUrlPath(apiSuffixUris = []) {
+      let urlWithPathname;
+      try {
+        urlWithPathname = this.constructUrl(apiSuffixUris);
+      } catch (error) {
+        return "";
+      }
+      return urlWithPathname;
+    }
   },
 };

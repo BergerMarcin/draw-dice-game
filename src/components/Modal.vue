@@ -1,36 +1,52 @@
 <template>
-  <div class="modal">
-    <div class="modal__mask" @click="onOutsideModalClick">
-      <!-- use @click.stop (to stop bubbling to the top of the DOM and stop trigger @click="onOutsideModalClick")-->
-      <div class="modal__container" @click.stop="onModalClick">
-        <div v-if="shouldDisplayCloseIcon" class="modal__container__icon">
-          <span @click="onCloseIconClick">
-            <CloseIcon class="modal-icon" />
-          </span>
+  <transition name="fade" v-if="modalText">
+    <div class="modal">
+      <div class="modal__mask" @click="onOutsideModalClick">
+        <!-- use @click.stop (to stop bubbling to the top of the DOM and stop trigger @click="onOutsideModalClick")-->
+        <div class="modal__container" @click.stop="onModalClick">
+          <div v-if="shouldDisplayCloseIcon" class="modal__container__icon">
+            <span @click="onCloseIconClick">
+              <CloseIcon class="modal-icon" />
+            </span>
+          </div>
+          <div v-if="getDiceUrl" class="modal__container__img">
+            <img :src="getDiceUrl" alt="Dice" />
+          </div>
+          <p class="modal__container__text" v-html="modalText" />
         </div>
-        <p class="modal__container__text" v-html="modalText" />
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
-import {mapActions, mapState} from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import CloseIcon from "@/components/svgs/CloseIcon.vue";
+import {API_HOST_IMG_SUFFIX_URIS} from "@/helpers/constants";
+import {diceApiMixin} from "@/mixins/diceApiMixin";
 
 export default {
   name: "Modal",
 
   components: { CloseIcon },
 
+  mixins: [diceApiMixin],
+
   props: {
-    shouldCloseOnOutsideModalClick: {type: Boolean, default: true },
-    shouldCloseOnModalClick: {type: Boolean, default: false },
-    shouldDisplayCloseIcon: {type: Boolean, default: true },
+    shouldCloseOnOutsideModalClick: { type: Boolean, default: true },
+    shouldCloseOnModalClick: { type: Boolean, default: false },
+    shouldDisplayCloseIcon: { type: Boolean, default: true },
   },
 
   computed: {
-    ...mapState(["modalText"])
+    ...mapState(["modalText"]),
+    ...mapGetters(["currentRoundResult"]),
+
+    getDiceUrl() {
+      const url = this.getDiceImgUrlPath(API_HOST_IMG_SUFFIX_URIS);
+      if (!url || this.currentRoundResult.previousDraw === null) return "";
+      return `${url}/${this.currentRoundResult.previousDraw}.png`;
+    }
   },
 
   methods: {
@@ -51,11 +67,15 @@ export default {
     onCloseIconClick() {
       if (this.shouldDisplayCloseIcon) this.onClose();
     },
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>
+@include animation-fade(0.5s) {
+  opacity: 0;
+}
+
 .modal {
   &__mask {
     position: fixed;
@@ -74,12 +94,10 @@ export default {
     background: $modal-color;
     padding: 15px;
     box-shadow: 0 10px 14px $shadow;
-    min-width: 250px;
-    max-width: 90%;
+    width: 85%;
     @include has-min-width("sm") {
       padding: 20px;
-      min-width: 500px;
-      max-width: 80%;
+      max-width: 60%;
     }
 
     &__icon {
@@ -96,13 +114,22 @@ export default {
       cursor: pointer;
     }
 
+    &__img {
+      display: inline-block;
+      &::after {
+        content: "";
+        display: inline-block;
+        height: 177px;
+      }
+    }
+
     &__text {
       font-size: rem(24px);
       font-weight: 300;
       text-align: center;
-      margin: 0 0 10px 0;
+      margin: 10px 0 10px 0;
       @include has-min-width("sm") {
-        margin: 10px 0;
+        margin-top: 20px;
       }
     }
   }
