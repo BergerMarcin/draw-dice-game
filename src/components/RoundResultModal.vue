@@ -13,6 +13,7 @@
             <img :src="getDiceUrl" alt="Dice" />
           </div>
           <p class="modal__container__text" v-html="modalText" />
+          <button @click="onClose">OK</button>
         </div>
       </div>
     </div>
@@ -20,13 +21,13 @@
 </template>
 
 <script>
-import {mapActions, mapGetters, mapState} from "vuex";
+import { mapGetters } from "vuex";
 import CloseIcon from "@/components/svgs/CloseIcon.vue";
-import {API_HOST_IMG_SUFFIX_URIS} from "@/helpers/constants";
-import {diceApiMixin} from "@/mixins/diceApiMixin";
+import { API_HOST_IMG_SUFFIX_URIS } from "@/helpers/constants";
+import { diceApiMixin } from "@/mixins/diceApiMixin";
 
 export default {
-  name: "Modal",
+  name: "RoundResultModal",
 
   components: { CloseIcon },
 
@@ -36,24 +37,22 @@ export default {
     shouldCloseOnOutsideModalClick: { type: Boolean, default: true },
     shouldCloseOnModalClick: { type: Boolean, default: false },
     shouldDisplayCloseIcon: { type: Boolean, default: true },
+    modalText: { type: String, default: "" },
   },
 
   computed: {
-    ...mapState(["modalText"]),
     ...mapGetters(["currentRoundResult"]),
 
     getDiceUrl() {
       const url = this.getDiceImgUrlPath(API_HOST_IMG_SUFFIX_URIS);
       if (!url || this.currentRoundResult.previousDraw === null) return "";
       return `${url}/${this.currentRoundResult.previousDraw}.png`;
-    }
+    },
   },
 
   methods: {
-    ...mapActions(["setModalText"]),
-
     onClose() {
-      this.setModalText("");
+      this.$emit("closeResultModal");
     },
 
     onOutsideModalClick() {
@@ -92,11 +91,11 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     background: $modal-color;
-    padding: 15px;
+    padding: 15px 15px 25px;
     box-shadow: 0 10px 14px $shadow;
     width: 85%;
     @include has-min-width("sm") {
-      padding: 20px;
+      padding: 20px 20px 35px;
       max-width: 60%;
     }
 
@@ -124,12 +123,14 @@ export default {
     }
 
     &__text {
-      font-size: rem(24px);
-      font-weight: 300;
+      font-size: rem(18px);
+      font-weight: 700;
       text-align: center;
-      margin: 10px 0 10px 0;
+      margin: 10px 0 15px;
       @include has-min-width("sm") {
-        margin-top: 20px;
+        font-size: rem(24px);
+        font-weight: 400;
+        margin: 20px 0 20px;
       }
     }
   }

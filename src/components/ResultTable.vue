@@ -31,7 +31,7 @@
 import { mapGetters, mapState } from "vuex";
 
 export default {
-  name: "Results",
+  name: "ResultTable",
 
   computed: {
     ...mapState(["results", "modalText"]),

@@ -1,7 +1,7 @@
 # interview-bergermarcin
 
 # TODO:
- - change `modalText` state to showResult @ App, Modal.vue -> ResultModal.vue
+ - alert | confirm -> swal 
  - 3D animation dice drawing 
  - downloading spinner / drawing dice
 

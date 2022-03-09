@@ -7,7 +7,6 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     results: [],
-    modalText: ""
   },
 
   mutations: {
@@ -24,9 +23,6 @@ export default new Vuex.Store({
       const game = state.results.pop();
       game[game.length - 1] = round;
       state.results.push(game);
-    },
-    SET_MODAL_TEXT(state, { modalText }) {
-      state.modalText = modalText;
     },
   },
 
@@ -55,9 +51,6 @@ export default new Vuex.Store({
       context.commit("UPDATE_CURRENT_ROUND", { round });
       return context.dispatch("saveResults");
     },
-    setModalText(context, { modalText }) {
-      context.commit("SET_MODAL_TEXT", { modalText });
-    }
   },
 
   getters: {

@@ -8,9 +8,9 @@
 
     <Round @nextDrawHigher="finalizeRound(choiceType.HIGHER)" @nextDrawLower="finalizeRound(choiceType.LOWER)" />
 
-    <Results />
+    <ResultTable />
 
-    <Modal />
+    <RoundResultModal v-if="modalText" :modalText="modalText" @close-result-modal="handleCloseResultModal" />
   </div>
 </template>
 
@@ -18,21 +18,22 @@
 import { diceApiMixin } from "@/mixins/diceApiMixin";
 import AppHeader from "@/components/AppHeader.vue";
 import Round from "@/components/Round";
-import Results from "@/components/Results";
-import Modal from "@/components/Modal.vue";
+import ResultTable from "@/components/ResultTable";
+import RoundResultModal from "@/components/RoundResultModal.vue";
 import Swal from "sweetalert2";
 import { mapState, mapActions, mapGetters } from "vuex";
-import {API_ERROR, API_HOST_DRAW_SUFFIX_URIS, CHOICE, CHOICE_POINTS, MAX_ROUNDS} from "@/helpers/constants";
+import { API_ERROR, API_HOST_DRAW_SUFFIX_URIS, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
 
 export default {
   name: "App",
 
-  components: { AppHeader, Round, Results, Modal },
+  components: { AppHeader, Round, ResultTable, RoundResultModal },
 
   mixins: [diceApiMixin],
 
   data: () => ({
     choiceType: CHOICE,
+    modalText: "",
   }),
 
   computed: {
@@ -42,10 +43,10 @@ export default {
 
   async created() {
     this.loadResults();
-    // TODO: move below code to the component to choose if new game or continue and display results underneath; use modal
     if (
-      !this.areResultsValid ||
+    !this.areResultsValid ||
       (this.currentRoundNumber >= MAX_ROUNDS && this.currentRoundResult.draw !== null) ||
+      // TODO: use swal
       !confirm("Would you like to continue saved game?")
     ) {
       if (!this.areResultsValid) await this.resetResults();
@@ -74,14 +75,12 @@ export default {
       const round = { ...this.currentRoundResult, draw, choice, points };
       await this.updateCurrentRound({ round });
 
-      // TODO: showRoundSummary
-      // alert(`Your points: ${points}`);
-      this.setModalText({ modalText: `Your draw: ${draw}</br></br>Your points: ${points}` });
+      this.modalText = `Your draw: ${draw}</br></br>Your points: ${points}`;
 
       if (this.currentRoundNumber < MAX_ROUNDS) {
         await this.startNewRound();
       } else {
-        // TODO: showModalNewGame (as below alert is blocking Vuex and no update of state, so on screen no points last round)
+        // TODO: use swal
         alert("Let's Start New Game!");
         await this.startNewGame();
       }
@@ -109,6 +108,10 @@ export default {
         });
       }
       return newDraw;
+    },
+
+    handleCloseResultModal() {
+      this.modalText = "";
     },
 
     async showError(msg) {
@@ -151,6 +154,22 @@ section {
 h3,
 h4 {
   margin: 10px 0;
+}
+
+h1 {
+  font-size: rem(32px);
+}
+
+h3 {
+  font-size: rem(24px);
+}
+
+h4 {
+  font-size: rem(20px);
+}
+
+h5 {
+  font-size: rem(16px);
 }
 
 button {

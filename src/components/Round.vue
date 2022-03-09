@@ -1,7 +1,7 @@
 <template>
   <section class="round">
-    <h4>Draw</h4>
-    <h3>Remaining rounds: {{ remainingRoundNumber }}</h3>
+    <h3>Draw</h3>
+    <h5>Remaining rounds: {{ remainingRoundNumber }}</h5>
     <h4>Previous draw: {{ areResultsValid ? currentRoundResult.previousDraw : "Start currentGameResults first!" }}</h4>
     <button @click="$emit('nextDrawHigher')" :disabled="!areResultsValid">↑ HIGHER next draw ↑</button>
     <button @click="$emit('nextDrawLower')" :disabled="!areResultsValid">↓ LOWER next draw ↓</button>
