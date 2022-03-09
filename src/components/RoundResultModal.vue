@@ -52,7 +52,7 @@ export default {
 
   methods: {
     onClose() {
-      this.$emit("closeResultModal");
+      this.$emit("close-result-modal");
     },
 
     onOutsideModalClick() {
