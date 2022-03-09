@@ -43,19 +43,31 @@ export default {
 
   async created() {
     this.loadResults();
-    if (
-    !this.areResultsValid ||
-      (this.currentRoundNumber >= MAX_ROUNDS && this.currentRoundResult.draw !== null) ||
-      // TODO: use swal
-      !confirm("Would you like to continue saved game?")
-    ) {
-      if (!this.areResultsValid) await this.resetResults();
-      await this.startNewGame();
+    if (!this.areResultsValid || (this.currentRoundNumber >= MAX_ROUNDS && this.currentRoundResult.draw !== null)) {
+      await this.startFirstGame();
+      return;
     }
+    await this.showConfirmation("Would you like to continue saved game?").then(async (result) => {
+      if (result.isDenied) await this.startFirstGame();
+    });
   },
 
   methods: {
     ...mapActions(["loadResults", "resetResults", "setNewGame", "setNewRound", "updateCurrentRound", "setModalText"]),
+
+    async startFirstGame() {
+      if (!this.areResultsValid) await this.resetResults();
+      await this.startNewGame();
+    },
+
+    async startNewRoundOrNewGame() {
+      if (this.currentRoundNumber < MAX_ROUNDS) {
+        await this.startNewRound();
+      } else {
+        await this.showWarning("Let's Start New Game!");
+        await this.startNewGame();
+      }
+    },
 
     async startNewGame() {
       const draw = await this.drawDice(0);
@@ -68,7 +80,6 @@ export default {
       await this.setNewRound({ newRound: newRound });
     },
 
-    // finalize round & then start new round || start new game
     async finalizeRound(choice) {
       const draw = await this.drawDice(this.currentRoundResult.previousDraw);
       const points = this.calcPointsOfRound(choice, draw);
@@ -76,14 +87,6 @@ export default {
       await this.updateCurrentRound({ round });
 
       this.modalText = `Your draw: ${draw}</br></br>Your points: ${points}`;
-
-      if (this.currentRoundNumber < MAX_ROUNDS) {
-        await this.startNewRound();
-      } else {
-        // TODO: use swal
-        alert("Let's Start New Game!");
-        await this.startNewGame();
-      }
     },
 
     calcPointsOfRound(choice, draw) {
@@ -110,8 +113,27 @@ export default {
       return newDraw;
     },
 
-    handleCloseResultModal() {
+    async handleCloseResultModal() {
       this.modalText = "";
+      await this.startNewRoundOrNewGame();
+    },
+
+    async showConfirmation(msg) {
+      return Swal.fire({
+        title: msg,
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Yes",
+        background: "#066920",
+      });
+    },
+
+    async showWarning(msg) {
+      return Swal.fire({
+        title: msg,
+        showCancelButton: false,
+        background: "#066920",
+      });
     },
 
     async showError(msg) {
@@ -120,8 +142,7 @@ export default {
         text: msg,
         icon: "error",
         showCancelButton: false,
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "OK",
+        background: "#066920",
       });
     },
   },
@@ -130,6 +151,7 @@ export default {
 
 <style lang="scss">
 @import "scss/base/reset";
+@import "scss/base/swal2";
 
 body {
   min-height: 100vh;
@@ -145,31 +167,6 @@ body {
   text-align: center;
   color: $text-color;
   overflow-y: auto;
-}
-
-section {
-  margin-bottom: 50px;
-}
-
-h3,
-h4 {
-  margin: 10px 0;
-}
-
-h1 {
-  font-size: rem(32px);
-}
-
-h3 {
-  font-size: rem(24px);
-}
-
-h4 {
-  font-size: rem(20px);
-}
-
-h5 {
-  font-size: rem(16px);
 }
 
 button {

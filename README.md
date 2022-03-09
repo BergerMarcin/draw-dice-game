@@ -1,7 +1,7 @@
 # interview-bergermarcin
 
-# TODO:
- - alert | confirm -> swal 
+# TODO: 
+ - move to separate utils-file of swal-logic
  - 3D animation dice drawing 
  - downloading spinner / drawing dice
 
