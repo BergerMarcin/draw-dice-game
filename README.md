@@ -1,7 +1,6 @@
-# interview-bergermarcin
+# Draw Dice Game
 
-# TODO: 
- - move to separate utils-file of swal-logic
+# TODO:
  - 3D animation dice drawing 
  - downloading spinner / drawing dice
 

@@ -20,9 +20,9 @@ import AppHeader from "@/components/AppHeader.vue";
 import Round from "@/components/Round";
 import ResultTable from "@/components/ResultTable";
 import RoundResultModal from "@/components/RoundResultModal.vue";
-import Swal from "sweetalert2";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { API_ERROR, API_HOST_DRAW_SUFFIX_URIS, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
+import { showWarning, showConfirmation, showError } from "@/services/message-service";
 
 export default {
   name: "App",
@@ -47,7 +47,7 @@ export default {
       await this.startFirstGame();
       return;
     }
-    await this.showConfirmation("Would you like to continue saved game?").then(async (result) => {
+    await showConfirmation("Would you like to continue saved game?").then(async (result) => {
       if (result.isDenied) await this.startFirstGame();
     });
   },
@@ -64,7 +64,7 @@ export default {
       if (this.currentRoundNumber < MAX_ROUNDS) {
         await this.startNewRound();
       } else {
-        await this.showWarning("Let's Start New Game!");
+        await showWarning("Let's Start New Game!");
         await this.startNewGame();
       }
     },
@@ -106,7 +106,7 @@ export default {
       let newDraw = prevDraw;
       while (newDraw === prevDraw) {
         newDraw = await this.getDiceValue(API_HOST_DRAW_SUFFIX_URIS).catch(async (error) => {
-          await this.showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG);
+          await showError(error?.toString().slice(7) || API_ERROR.UNKNOWN.USER_MSG);
           return prevDraw;
         });
       }
@@ -116,34 +116,6 @@ export default {
     async handleCloseResultModal() {
       this.modalText = "";
       await this.startNewRoundOrNewGame();
-    },
-
-    async showConfirmation(msg) {
-      return Swal.fire({
-        title: msg,
-        showDenyButton: true,
-        showCancelButton: false,
-        confirmButtonText: "Yes",
-        background: "#066920",
-      });
-    },
-
-    async showWarning(msg) {
-      return Swal.fire({
-        title: msg,
-        showCancelButton: false,
-        background: "#066920",
-      });
-    },
-
-    async showError(msg) {
-      return Swal.fire({
-        title: "Error Message",
-        text: msg,
-        icon: "error",
-        showCancelButton: false,
-        background: "#066920",
-      });
     },
   },
 };
