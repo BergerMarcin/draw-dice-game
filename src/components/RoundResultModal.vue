@@ -114,7 +114,6 @@ export default {
     }
 
     &__img {
-      display: inline-block;
       &::after {
         content: "";
         display: inline-block;

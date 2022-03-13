@@ -2,6 +2,8 @@
   <div id="app">
     <AppHeader msg="Guess Your Draw!" />
 
+    <DiceRotating />
+
     <section>
       <button @click="startNewGame">Start New Game</button>
     </section>
@@ -23,11 +25,12 @@ import RoundResultModal from "@/components/RoundResultModal.vue";
 import { mapState, mapActions, mapGetters } from "vuex";
 import { API_ERROR, API_HOST_DRAW_SUFFIX_URIS, CHOICE, CHOICE_POINTS, MAX_ROUNDS } from "@/helpers/constants";
 import { showWarning, showConfirmation, showError } from "@/services/message-service";
+import DiceRotating from "./components/DiceRotating";
 
 export default {
   name: "App",
 
-  components: { AppHeader, Round, ResultTable, RoundResultModal },
+  components: { DiceRotating, AppHeader, Round, ResultTable, RoundResultModal },
 
   mixins: [diceApiMixin],
 
@@ -86,7 +89,7 @@ export default {
       const round = { ...this.currentRoundResult, draw, choice, points };
       await this.updateCurrentRound({ round });
 
-      this.modalText = `Your draw: ${draw}</br></br>Your points: ${points}`;
+      this.modalText = `Draw: ${draw}</br></br>Your points: ${points}`;
     },
 
     calcPointsOfRound(choice, draw) {
