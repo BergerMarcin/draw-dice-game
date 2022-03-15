@@ -14,7 +14,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-header {
+.header {
+  display: inline-block;
   margin: 40px 0 40px;
   text-align: center;
 }

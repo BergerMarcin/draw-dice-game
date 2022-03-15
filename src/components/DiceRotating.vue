@@ -36,14 +36,14 @@ export default {
       this.cubeElement.style.transform = `translateZ(-100px) rotateX(${this.rotationX}deg) rotateY(${this.rotationY}deg)`;
       let deltaRotationX = 0;
       let deltaRotationY = 0;
-      while (deltaRotationX === 0 && deltaRotationY === 0 ) {
+      while (deltaRotationX === 0 && deltaRotationY === 0) {
         deltaRotationX = Math.round(Math.random() * 3 - 1.5) * 90;
         deltaRotationY = Math.round(Math.random() * 3 - 1.5) * 90;
       }
       this.rotationX += deltaRotationX;
       this.rotationY += deltaRotationY;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -51,7 +51,7 @@ export default {
 .scene {
   width: 200px;
   height: 200px;
-  margin: 0 auto 40px;
+  margin: 20px auto 60px;
   perspective: 600px;
 }
 
